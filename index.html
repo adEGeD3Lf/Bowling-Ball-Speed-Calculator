@@ -1,0 +1,211 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ボウリング球速計算ツール</title>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --container-bg: #1e1e1e;
+            --accent-color: #00adb5;
+            --text-color: #eeeeee;
+            --text-muted: #888888;
+            --btn-start: #393e46;
+            --btn-stop: #ff2e63;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background-color: var(--container-bg);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            width: 350px;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+            color: var(--accent-color);
+        }
+
+        .subtitle {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 25px;
+        }
+
+        .timer-display {
+            font-size: 3.5rem;
+            font-weight: bold;
+            margin-bottom: 25px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        button {
+            padding: 12px 24px;
+            font-size: 1rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            color: #fff;
+            flex: 1;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        #startStopBtn {
+            background-color: var(--accent-color);
+        }
+
+        #startStopBtn.running {
+            background-color: var(--btn-stop);
+        }
+
+        #resetBtn {
+            background-color: var(--btn-start);
+        }
+
+        .result-box {
+            background-color: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .result-item {
+            text-align: center;
+        }
+
+        .result-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+        }
+
+        .result-value {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>球速計算ツール</h1>
+    <div class="subtitle">※投球からピンに当たるまでの時間を計測 (60ft)</div>
+    
+    <div class="timer-display" id="display">0.000</div>
+    
+    <div class="btn-group">
+        <button id="startStopBtn">スタート</button>
+        <button id="resetBtn">リセット</button>
+    </div>
+    
+    <div class="result-box">
+        <div class="result-item">
+            <div class="result-label">球速 (km/h)</div>
+            <div class="result-value" id="speedKmh">-</div>
+        </div>
+        <div class="result-item">
+            <div class="result-label">球速 (mph)</div>
+            <div class="result-value" id="speedMph">-</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let startTime = 0;
+    let elapsedTime = 0;
+    let timerInterval = null;
+    let isRunning = false;
+
+    const display = document.getElementById('display');
+    const startStopBtn = document.getElementById('startStopBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const speedKmhDisplay = document.getElementById('speedKmh');
+    const speedMphDisplay = document.getElementById('speedMph');
+
+    // 60フィート = 18.288メートル
+    const DISTANCE_METERS = 18.288; 
+    // 60フィート = 1 / 88 マイル
+    const DISTANCE_MILES = 1 / 88; 
+
+    function updateTime() {
+        elapsedTime = Date.now() - startTime;
+        display.textContent = (elapsedTime / 1000).toFixed(3);
+    }
+
+    function calculateSpeed(seconds) {
+        if (seconds <= 0) return;
+
+        // km/h の計算: (距離m / 時間s) * 3.6
+        const kmh = (DISTANCE_METERS / seconds) * 3.6;
+        // mph の計算: (距離mile / (時間s / 3600))
+        const mph = DISTANCE_MILES / (seconds / 3600);
+
+        speedKmhDisplay.textContent = kmh.toFixed(2);
+        speedMphDisplay.textContent = mph.toFixed(2);
+    }
+
+    startStopBtn.addEventListener('click', () => {
+        if (!isRunning) {
+            // スタート
+            startTime = Date.now() - elapsedTime;
+            timerInterval = setInterval(updateTime, 10);
+            startStopBtn.textContent = 'ストップ';
+            startStopBtn.classList.add('running');
+            isRunning = true;
+        } else {
+            // ストップ
+            clearInterval(timerInterval);
+            const finalSeconds = elapsedTime / 1000;
+            calculateSpeed(finalSeconds);
+            startStopBtn.textContent = 'スタート';
+            startStopBtn.classList.remove('running');
+            isRunning = false;
+        }
+    });
+
+    resetBtn.addEventListener('click', () => {
+        clearInterval(timerInterval);
+        startTime = 0;
+        elapsedTime = 0;
+        isRunning = false;
+        display.textContent = '0.000';
+        startStopBtn.textContent = 'スタート';
+        startStopBtn.classList.remove('running');
+        speedKmhDisplay.textContent = '-';
+        speedMphDisplay.textContent = '-';
+    });
+</script>
+
+</body>
+</html>
