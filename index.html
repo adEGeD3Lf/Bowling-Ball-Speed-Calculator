@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -12,7 +11,6 @@
             --accent-color: #00adb5;
             --text-color: #eeeeee;
             --text-muted: #888888;
-            --btn-start: #393e46;
             --btn-stop: #ff2e63;
         }
 
@@ -31,7 +29,7 @@
             background-color: var(--container-bg);
             padding: 30px;
             border-radius: 15px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 8px 24 rgba(0, 0, 0, 0.5);
             text-align: center;
             width: 350px;
         }
@@ -57,21 +55,20 @@
 
         .btn-group {
             display: flex;
-            gap: 10px;
             justify-content: center;
             margin-bottom: 30px;
         }
 
         button {
-            padding: 12px 24px;
-            font-size: 1rem;
+            padding: 15px 40px;
+            font-size: 1.2rem;
             font-weight: bold;
             border: none;
             border-radius: 8px;
             cursor: pointer;
             transition: background 0.2s, transform 0.1s;
             color: #fff;
-            flex: 1;
+            width: 100%;
         }
 
         button:active {
@@ -84,10 +81,6 @@
 
         #startStopBtn.running {
             background-color: var(--btn-stop);
-        }
-
-        #resetBtn {
-            background-color: var(--btn-start);
         }
 
         .result-box {
@@ -120,13 +113,12 @@
 
 <div class="container">
     <h1>球速計算ツール</h1>
-    <div class="subtitle">※投球からピンに当たるまでの時間を計測 (60ft)</div>
+    <div class="subtitle">投球からピンに当たるまでの時間を計測</div>
     
     <div class="timer-display" id="display">0.000</div>
     
     <div class="btn-group">
         <button id="startStopBtn">スタート</button>
-        <button id="resetBtn">リセット</button>
     </div>
     
     <div class="result-box">
@@ -149,13 +141,10 @@
 
     const display = document.getElementById('display');
     const startStopBtn = document.getElementById('startStopBtn');
-    const resetBtn = document.getElementById('resetBtn');
     const speedKmhDisplay = document.getElementById('speedKmh');
     const speedMphDisplay = document.getElementById('speedMph');
 
-    // 60フィート = 18.288メートル
     const DISTANCE_METERS = 18.288; 
-    // 60フィート = 1 / 88 マイル
     const DISTANCE_MILES = 1 / 88; 
 
     function updateTime() {
@@ -165,20 +154,21 @@
 
     function calculateSpeed(seconds) {
         if (seconds <= 0) return;
-
-        // km/h の計算: (距離m / 時間s) * 3.6
         const kmh = (DISTANCE_METERS / seconds) * 3.6;
-        // mph の計算: (距離mile / (時間s / 3600))
         const mph = DISTANCE_MILES / (seconds / 3600);
-
         speedKmhDisplay.textContent = kmh.toFixed(2);
         speedMphDisplay.textContent = mph.toFixed(2);
     }
 
     startStopBtn.addEventListener('click', () => {
         if (!isRunning) {
-            // スタート
-            startTime = Date.now() - elapsedTime;
+            // 【変更点】スタート時に自動で前回の記録をリセットする
+            elapsedTime = 0;
+            display.textContent = '0.000';
+            speedKmhDisplay.textContent = '-';
+            speedMphDisplay.textContent = '-';
+
+            startTime = Date.now();
             timerInterval = setInterval(updateTime, 10);
             startStopBtn.textContent = 'ストップ';
             startStopBtn.classList.add('running');
@@ -192,18 +182,6 @@
             startStopBtn.classList.remove('running');
             isRunning = false;
         }
-    });
-
-    resetBtn.addEventListener('click', () => {
-        clearInterval(timerInterval);
-        startTime = 0;
-        elapsedTime = 0;
-        isRunning = false;
-        display.textContent = '0.000';
-        startStopBtn.textContent = 'スタート';
-        startStopBtn.classList.remove('running');
-        speedKmhDisplay.textContent = '-';
-        speedMphDisplay.textContent = '-';
     });
 </script>
 
