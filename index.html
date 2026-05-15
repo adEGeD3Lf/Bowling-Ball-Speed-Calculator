@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ボウリング球速計算ツール</title>
+    <title>Bowling Speed Calculator</title>
     <style>
         :root {
             --bg-color: #121212;
-            --container-bg: #1e1e1e;
+            --btn-idle: #1e1e1e;
+            --btn-running: #ff2e63;
             --accent-color: #00adb5;
             --text-color: #eeeeee;
             --text-muted: #888888;
-            --btn-stop: #ff2e63;
         }
 
         body {
@@ -23,73 +23,67 @@
             align-items: center;
             height: 100vh;
             margin: 0;
+            overflow: hidden;
         }
 
-        .container {
-            background-color: var(--container-bg);
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 8px 24 rgba(0, 0, 0, 0.5);
-            text-align: center;
-            width: 350px;
-        }
-
-        h1 {
-            font-size: 1.5rem;
-            margin-bottom: 5px;
-            color: var(--accent-color);
-        }
-
-        .subtitle {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            margin-bottom: 25px;
-        }
-
-        .timer-display {
-            font-size: 3.5rem;
-            font-weight: bold;
-            margin-bottom: 25px;
-            font-variant-numeric: tabular-nums;
-        }
-
-        .btn-group {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 30px;
-        }
-
-        button {
-            padding: 15px 40px;
-            font-size: 1.2rem;
-            font-weight: bold;
-            border: none;
-            border-radius: 8px;
+        /* 画面の大部分を占める巨大なボタン */
+        .mega-btn {
+            background-color: var(--btn-idle);
+            border: 3px solid var(--accent-color);
+            border-radius: 20px;
+            width: 90vw;
+            max-width: 400px;
+            height: 80vh;
+            max-height: 600px;
             cursor: pointer;
-            transition: background 0.2s, transform 0.1s;
-            color: #fff;
-            width: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 40px 20px;
+            box-sizing: border-box;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.7);
+            transition: background-color 0.2s, transform 0.1s, border-color 0.2s;
+            -webkit-tap-highlight-color: transparent; /* スマホのタップ青枠を消す */
         }
 
-        button:active {
+        /* 計測中のスタイル */
+        .mega-btn.running {
+            background-color: var(--btn-running);
+            border-color: #ff4a7d;
+        }
+
+        .mega-btn:active {
             transform: scale(0.98);
         }
 
-        #startStopBtn {
-            background-color: var(--accent-color);
+        .status-text {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--accent-color);
+            letter-spacing: 2px;
         }
 
-        #startStopBtn.running {
-            background-color: var(--btn-stop);
+        .mega-btn.running .status-text {
+            color: #fff;
+        }
+
+        .timer-display {
+            font-size: 5rem;
+            font-weight: bold;
+            color: #fff;
+            font-variant-numeric: tabular-nums;
+            margin: auto 0;
         }
 
         .result-box {
-            background-color: rgba(255, 255, 255, 0.05);
-            padding: 15px;
-            border-radius: 10px;
+            background-color: rgba(0, 0, 0, 0.4);
+            padding: 20px;
+            border-radius: 12px;
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 10px;
+            gap: 15px;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         .result-item {
@@ -97,13 +91,18 @@
         }
 
         .result-label {
-            font-size: 0.8rem;
+            font-size: 0.9rem;
             color: var(--text-muted);
             margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        .mega-btn.running .result-label {
+            color: rgba(255, 255, 255, 0.6);
         }
 
         .result-value {
-            font-size: 1.4rem;
+            font-size: 1.8rem;
             font-weight: bold;
             color: #fff;
         }
@@ -111,27 +110,23 @@
 </head>
 <body>
 
-<div class="container">
-    <h1>球速計算ツール</h1>
-    <div class="subtitle">投球からピンに当たるまでの時間を計測</div>
+<!-- ボタンそのものがコンテナになっています -->
+<button id="actionBtn" class="mega-btn">
+    <div class="status-text" id="statusText">TAP TO START</div>
     
     <div class="timer-display" id="display">0.000</div>
     
-    <div class="btn-group">
-        <button id="startStopBtn">スタート</button>
-    </div>
-    
     <div class="result-box">
         <div class="result-item">
-            <div class="result-label">球速 (km/h)</div>
+            <div class="result-label">km/h</div>
             <div class="result-value" id="speedKmh">-</div>
         </div>
         <div class="result-item">
-            <div class="result-label">球速 (mph)</div>
+            <div class="result-label">mph</div>
             <div class="result-value" id="speedMph">-</div>
         </div>
     </div>
-</div>
+</button>
 
 <script>
     let startTime = 0;
@@ -139,8 +134,9 @@
     let timerInterval = null;
     let isRunning = false;
 
+    const actionBtn = document.getElementById('actionBtn');
+    const statusText = document.getElementById('statusText');
     const display = document.getElementById('display');
-    const startStopBtn = document.getElementById('startStopBtn');
     const speedKmhDisplay = document.getElementById('speedKmh');
     const speedMphDisplay = document.getElementById('speedMph');
 
@@ -160,9 +156,9 @@
         speedMphDisplay.textContent = mph.toFixed(2);
     }
 
-    startStopBtn.addEventListener('click', () => {
+    actionBtn.addEventListener('click', () => {
         if (!isRunning) {
-            // 【変更点】スタート時に自動で前回の記録をリセットする
+            // スタート（自動リセット）
             elapsedTime = 0;
             display.textContent = '0.000';
             speedKmhDisplay.textContent = '-';
@@ -170,16 +166,18 @@
 
             startTime = Date.now();
             timerInterval = setInterval(updateTime, 10);
-            startStopBtn.textContent = 'ストップ';
-            startStopBtn.classList.add('running');
+            
+            statusText.textContent = 'TAP TO STOP';
+            actionBtn.classList.add('running');
             isRunning = true;
         } else {
             // ストップ
             clearInterval(timerInterval);
             const finalSeconds = elapsedTime / 1000;
             calculateSpeed(finalSeconds);
-            startStopBtn.textContent = 'スタート';
-            startStopBtn.classList.remove('running');
+            
+            statusText.textContent = 'TAP TO RESTART';
+            actionBtn.classList.remove('running');
             isRunning = false;
         }
     });
