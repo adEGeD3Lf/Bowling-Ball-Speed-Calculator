@@ -33,17 +33,17 @@
             border-radius: 20px;
             width: 90vw;
             max-width: 400px;
-            height: 80vh;
-            max-height: 600px;
+            height: 85vh;
+            max-height: 650px;
             cursor: pointer;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            padding: 40px 20px;
+            padding: 30px 20px;
             box-sizing: border-box;
             box-shadow: 0 12px 30px rgba(0, 0, 0, 0.7);
             transition: background-color 0.2s, transform 0.1s, border-color 0.2s;
-            -webkit-tap-highlight-color: transparent; /* スマホのタップ青枠を消す */
+            -webkit-tap-highlight-color: transparent;
         }
 
         /* 計測中のスタイル */
@@ -57,73 +57,78 @@
         }
 
         .status-text {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             font-weight: bold;
             color: var(--accent-color);
             letter-spacing: 2px;
+            text-align: center;
         }
 
         .mega-btn.running .status-text {
             color: #fff;
         }
 
-        .timer-display {
-            font-size: 5rem;
-            font-weight: bold;
-            color: #fff;
-            font-variant-numeric: tabular-nums;
+        /* 3つの表示エリアをまとめるコンテナ */
+        .display-section {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 100%;
             margin: auto 0;
         }
 
-        .result-box {
+        /* 時間・km/h・mph で共通のスタイル（サイズを同一に） */
+        .display-item {
             background-color: rgba(0, 0, 0, 0.4);
-            padding: 20px;
+            padding: 12px;
             border-radius: 12px;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            width: 100%;
+            text-align: center;
             box-sizing: border-box;
         }
 
-        .result-item {
-            text-align: center;
-        }
-
-        .result-label {
-            font-size: 0.9rem;
+        .display-label {
+            font-size: 0.8rem;
             color: var(--text-muted);
-            margin-bottom: 5px;
+            margin-bottom: 3px;
             text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
-        .mega-btn.running .result-label {
+        .mega-btn.running .display-label {
             color: rgba(255, 255, 255, 0.6);
         }
 
-        .result-value {
-            font-size: 1.8rem;
+        /* すべて同じフォントサイズに統一 */
+        .display-value {
+            font-size: 2.6rem;
             font-weight: bold;
             color: #fff;
+            font-variant-numeric: tabular-nums;
         }
     </style>
 </head>
 <body>
 
-<!-- ボタンそのものがコンテナになっています -->
 <button id="actionBtn" class="mega-btn">
     <div class="status-text" id="statusText">TAP TO START</div>
     
-    <div class="timer-display" id="display">0.000</div>
-    
-    <div class="result-box">
-        <div class="result-item">
-            <div class="result-label">km/h</div>
-            <div class="result-value" id="speedKmh">-</div>
+    <div class="display-section">
+        <!-- TIME 表示 -->
+        <div class="display-item">
+            <div class="display-label">Time (sec)</div>
+            <div class="display-value" id="display">0.000</div>
         </div>
-        <div class="result-item">
-            <div class="result-label">mph</div>
-            <div class="result-value" id="speedMph">-</div>
+        
+        <!-- KM/H 表示 -->
+        <div class="display-item">
+            <div class="display-label">Speed (km/h)</div>
+            <div class="display-value" id="speedKmh">-</div>
+        </div>
+        
+        <!-- MPH 表示 -->
+        <div class="display-item">
+            <div class="display-label">Speed (mph)</div>
+            <div class="display-value" id="speedMph">-</div>
         </div>
     </div>
 </button>
