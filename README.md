@@ -3,6 +3,7 @@
 <img width="438" height="686" alt="Image1" src="https://github.com/user-attachments/assets/563dee8f-1f3c-4766-a7b3-0711623a3367" />
 
 
+
 使い方
 ボールを投げた瞬間に画面をタップする
 ↓
